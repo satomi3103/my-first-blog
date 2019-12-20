@@ -10,7 +10,7 @@ class Post(models.Model): #models.Model : Django Modelであるということ�
     created_date = models.DateTimeField(default=timezone.now)
     published_date = models.DateTimeField(blank=True, null=True)
 
-    def publish(self):
+    def publish(self):  # 記事を公開する
         self.published_date = timezone.now()
         self.save()
 
