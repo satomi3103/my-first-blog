@@ -1,6 +1,7 @@
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from .models import Post
+from .forms import PostForm
 
 
 # Create your views here.
@@ -12,3 +13,29 @@ def post_detail(request, pk):
     post = get_object_or_404(Post, pk=pk)
     return render(request, 'blog/post_detail.html',{'post' : post})
     
+def post_new(request):
+    if request.method == "POST" : 
+        form = PostForm(request.POST)
+        if form.is_valid():
+            post = form.save(commit=False) #Postモデルをまだ保存しない
+            post.author = request.user
+            post.published_date = timezone.now()
+            post.save() #変更を保存
+            return redirect('post_detail',pk=post.pk)
+    else :
+        form = PostForm()
+    return render(request, 'blog/post_edit.html', {'form': form})
+
+def post_edit(request,pk):
+    post = get_object_or_404(Post,pk=pk)
+    if request.method == "POST":
+        form = PostForm(request.POST, instance = post) #別のポストを編集
+        if form.is_valid():
+            post = form.save(commit=False) #Postモデルをまだ保存しない
+            post.author = request.user
+            post.published_date = timezone.now()
+            post.save() #変更を保存
+            return redirect('post_detail',pk=post.pk) 
+    else:
+        form = PostForm(instance=post) #現在のポストを編集
+    return render(request,'blog/post_edit.html',{'form':form})
